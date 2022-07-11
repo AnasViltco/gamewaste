@@ -1,25 +1,37 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Link from 'next/link';
-
+import { toast } from 'react-toastify';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import { CardActionArea, Grid } from '@mui/material';
-
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
+
+import { platformsArray } from 'src/utils'
+import { AuthContext } from 'src/contexts/AuthContext';
+
+import { db } from "firebase-config";
+import { updateDoc, doc } from "firebase/firestore";
 
 import styles from 'styles/Home.module.css';
+import { handleCollection } from 'src/utils/handleLike';
 
 const GameCard = ({ item }: any) => {
-  const platformsArray = (platform: any) => {
-    return platform.split(', ');
-  };
+
+  const { loggedInUser, setLoggedInUser }: any = useContext(AuthContext)
 
   const platform = platformsArray(item.platforms);
+
+  const handleCollectionData = async (id: any,) => {
+    const data = await handleCollection(id, loggedInUser)
+    setLoggedInUser(data)
+
+  }
 
   return (
     <div className={styles.card}>
@@ -55,13 +67,13 @@ const GameCard = ({ item }: any) => {
                 : item.title}
             </Typography>
             <Stack spacing={2} direction="row" justifyContent="space-between">
-              <>
+              <span>
                 {item.worth === 'N/A' ? (
                   <span style={{ color: '#f23f31' }}>FREE</span>
                 ) : (
                   <span>{item.worth}</span>
                 )}
-              </>
+              </span>
               <span>
                 {platform.slice(0, 2).map((p: any) => (
                   <span
@@ -87,9 +99,12 @@ const GameCard = ({ item }: any) => {
                 ? item.description.substring(0, 50) + ' ...'
                 : item.description}
             </Typography>
-
             <Stack spacing={2} direction="row" sx={{ mt: '10px' }}>
-              <AddBoxIcon fontSize="large" />
+
+              {loggedInUser?.collection?.some((s: any) => s === item.id) ?
+                <IndeterminateCheckBoxIcon fontSize="large" onClick={() => handleCollectionData(item.id)} />
+                :
+                <AddBoxIcon fontSize="large" onClick={() => handleCollectionData(item.id)} />}
               <Button variant="outlined" color="error" fullWidth>
                 <Link href={`/${item.id}`} >
                   View Detail</Link>

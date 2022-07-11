@@ -1,17 +1,25 @@
-import { Grid, Divider, Typography, Container, Card, CardMedia } from '@mui/material'
-import React from 'react'
+import React, { useContext } from 'react'
 import Link from 'next/link';
 
-import Dashboard from '../dashboard'
-import WarningIcon from '@mui/icons-material/Warning';
+// import Dashboard from '../dashboard'
 import GroupsIcon from '@mui/icons-material/Groups';
+import WarningIcon from '@mui/icons-material/Warning';
 
 import Button from '@mui/material/Button';
+import { Grid, Divider, Typography, Container, Card, CardMedia } from '@mui/material'
+
+import { platformsArray } from 'src/utils'
+import { AuthContext } from 'src/contexts/AuthContext';
+import { GiveAwaysContext } from 'src/contexts/GiveAwaysContext';
+import GameCardsContainer from 'src/components/gameCardsContainer';
 
 import styles from 'styles/Home.module.css';
+import { handleCollection } from 'src/utils/handleLike';
 
 const SingleDetail = ({ data }: any) => {
-    console.log(data)
+
+    const { giveAways } = useContext(GiveAwaysContext)
+    const { loggedInUser, setLoggedInUser }: any = useContext(AuthContext)
 
     if (!data) return (<Grid sx={{ textAlign: 'center' }}>
         <div className={styles.SingleDetailHeading}>
@@ -25,12 +33,17 @@ const SingleDetail = ({ data }: any) => {
         </div>
     </Grid>)
 
-    const platformsArray = (platforms: any) => {
-        return platforms.split(', ');
-    };
-
     const platform = platformsArray(data.platforms);
 
+    const filterData = (data: any, id: string) => {
+        return data.filter((item: any) => item.id !== id)
+    }
+
+    const handleCollectionData = async (id: any,) => {
+        const data = await handleCollection(id, loggedInUser)
+        setLoggedInUser(data)
+
+    }
 
     return (
         <div>
@@ -96,7 +109,7 @@ const SingleDetail = ({ data }: any) => {
                                 </Grid>
                             </Grid>
                         </Grid>
-                        <Divider sx={{ mt: '10px' }} />
+                        <Divider sx={{ m: '10px' }} />
                         <Typography
                             variant="subtitle1"
                             color="text.secondary"
@@ -144,8 +157,9 @@ const SingleDetail = ({ data }: any) => {
                                             </Button>
                                         </Grid>
                                         <Grid sx={{ mt: "10px" }}>
-                                            <Button variant="outlined" fullWidth color="warning">
-                                                Add to collection
+                                            <Button variant="outlined" fullWidth color="warning" onClick={() => handleCollectionData(data.id)}>
+                                                {loggedInUser?.collection?.some((s: any) => s === data.id) ? "Remove from " : "Add to "}
+                                                collection
                                             </Button>
                                         </Grid>
                                     </Container>
@@ -183,8 +197,7 @@ const SingleDetail = ({ data }: any) => {
                         Giveaways you might like
                     </Typography>
                 </div>
-
-                <Dashboard />
+                <GameCardsContainer data={filterData(giveAways, data.id)} />
             </Grid>
         </div>
     )

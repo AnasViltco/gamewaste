@@ -1,22 +1,15 @@
 import React, { useState, useContext } from 'react'
+import { useRouter } from 'next/router'
 import { toast } from 'react-toastify';
 import { AuthContext } from 'src/contexts/AuthContext';
 
 import { Grid, Paper, TextField, Button, Typography, Link, Divider } from '@mui/material'
 
 import { db } from "firebase-config";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc, getDoc,
-  query, where, orderBy, onSnapshot
-} from "firebase/firestore";
+import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 
 const Login = () => {
-
+  const router = useRouter()
   let { setLoggedInUser } = useContext(AuthContext)
   const usersCollectionRef = collection(db, "users");
 
@@ -30,14 +23,15 @@ const Login = () => {
 
   const validateData = () => {
     let isValid = false
-    if (!isLogin && userName === '') {
-      toast.error('User Name is Required');
+    var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!isLogin && userName === '' || userName.length <= 4) {
+      toast.error('User Name is Required with at-least 5 character');
       return isValid
-    } else if (userEmail === "") {
-      toast.error('Email is required');
+    } else if (userEmail === "" || !userEmail.match(mailformat)) {
+      toast.error('Email not valid');
       return isValid
-    } else if (userPassword === "") {
-      toast.error('Password  is Required');
+    } else if (userPassword === "" || userPassword.length <= 4) {
+      toast.error('Password  is Required with at-least 5 character');
       return isValid
     }
     isValid = true
@@ -53,7 +47,7 @@ const Login = () => {
       const querySnapshot = await getDocs(q);
       let data: any;
       querySnapshot.forEach((doc) => {
-        data = doc.data()
+        data = { ...doc.data(), id: doc.id }
       });
 
       if (!data) {
@@ -62,6 +56,7 @@ const Login = () => {
       }
       setLoggedInUser(data)
       toast.success('User login Successfully');
+      router.push('/')
       return
     }
     await addDoc(usersCollectionRef, { userName: userName, email: userEmail, password: userPassword, collection: [] });
