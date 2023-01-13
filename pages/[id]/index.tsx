@@ -32,7 +32,7 @@ const CardDetail = () => {
             })
     );
 
-    if (isLoading) return <>Loading...</>;
+    if (isLoading) return <div style={{color:"white"}}>Loading...</div>;
     if (error) return <>An error has occurred: </>;
 
     return (

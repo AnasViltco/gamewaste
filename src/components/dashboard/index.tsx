@@ -38,7 +38,7 @@ const Dashboard = () => {
   );
 
 
-  if (isLoading) return <>Loading...</>;
+  if (isLoading) return <div style={{color:"white"}}>Loading...</div>;
 
   if (error) return <>An error has occurred: </>;
   const typeArray: string[] = getUniqueArray(data, 'type')
